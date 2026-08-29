@@ -4,15 +4,29 @@ import { courses } from "../data/mockData";
 export default function Learn() {
   return (
     <section className="section page-top">
-      <p className="eyebrow">Structured learning</p>
-      <h1>Learn</h1>
+      <p className="page-kicker">
+        NOORFORGE / LEARN
+      </p>
+
+      <p className="eyebrow">
+        Learning tracks
+      </p>
+
+      <h1>
+        Learn, then use it.
+      </h1>
+
       <p className="lead">
-        Learn the fundamentals first, then apply them in real NoorForge projects.
+        Start with the fundamentals and turn each skill
+        into something practical.
       </p>
 
       <div className="card-grid page-grid">
         {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
+          <CourseCard
+            key={course.id}
+            course={course}
+          />
         ))}
       </div>
     </section>

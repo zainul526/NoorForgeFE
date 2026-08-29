@@ -3,53 +3,112 @@ import { apiRequest } from "../services/api";
 
 export default function Contact() {
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+
+    setSending(true);
+    setMessage("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
 
     try {
       await apiRequest("/contact", {
         method: "POST",
+
         body: JSON.stringify({
-          name: form.get("name"),
-          email: form.get("email"),
-          message: form.get("message"),
+          name: formData.get("name"),
+          email: formData.get("email"),
+          message: formData.get("message"),
         }),
       });
 
       setMessage("Message sent successfully.");
-      event.currentTarget.reset();
+
+      form.reset();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not send message.");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not send message."
+      );
+    } finally {
+      setSending(false);
     }
   }
 
   return (
     <section className="section page-top form-section">
-      <p className="eyebrow">Get in touch</p>
-      <h1>Contact NoorForge</h1>
+      <p className="page-kicker">
+        NOORFORGE / CONTACT
+      </p>
 
-      <form className="form" onSubmit={handleSubmit}>
+      <p className="eyebrow">
+        Get in touch
+      </p>
+
+      <h1>Contact</h1>
+
+      <p className="lead">
+        Send a message to the NoorForge team.
+      </p>
+
+      <form
+        className="form"
+        onSubmit={handleSubmit}
+      >
         <label>
           Name
-          <input name="name" required />
+
+          <input
+            name="name"
+            type="text"
+            required
+            minLength={2}
+          />
         </label>
 
         <label>
           Email
-          <input type="email" name="email" required />
+
+          <input
+            name="email"
+            type="email"
+            required
+          />
         </label>
 
         <label>
           Message
-          <textarea name="message" rows={5} required />
+
+          <textarea
+            name="message"
+            rows={6}
+            required
+            minLength={5}
+          />
         </label>
 
-        <button className="button" type="submit">Send Message</button>
+        <button
+          className="button"
+          type="submit"
+          disabled={sending}
+        >
+          {sending
+            ? "Sending..."
+            : "Send message"}
+        </button>
       </form>
 
-      {message && <p className="form-message">{message}</p>}
+      {message && (
+        <p className="form-message">
+          {message}
+        </p>
+      )}
     </section>
   );
 }

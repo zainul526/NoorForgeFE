@@ -1,44 +1,145 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import { apiRequest } from "../services/api";
 import { courses } from "../data/mockData";
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+};
+
+type MeResponse = {
+  user: User;
+};
+
 export default function Dashboard() {
-  const rawUser = localStorage.getItem("user");
-  const user = rawUser ? JSON.parse(rawUser) : { name: "Member" };
+  const [user, setUser] =
+    useState<User | null>(() => {
+      const stored =
+        localStorage.getItem("user");
+
+      if (!stored) {
+        return null;
+      }
+
+      try {
+        return JSON.parse(stored) as User;
+      } catch {
+        return null;
+      }
+    });
+
+  const [message, setMessage] =
+    useState("");
+
+  useEffect(() => {
+    apiRequest<MeResponse>(
+      "/auth/me",
+      {
+        auth: true,
+      }
+    )
+      .then((data) => {
+        setUser(data.user);
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data.user)
+        );
+      })
+      .catch((error) => {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : "Could not load profile."
+        );
+      });
+  }, []);
 
   return (
     <section className="section page-top">
-      <p className="eyebrow">Member dashboard</p>
-      <h1>Welcome, {user.name} 👋</h1>
-      <p className="lead">
-        Your learning, projects and activity will live here.
+      <p className="page-kicker">
+        NOORFORGE / DASHBOARD
       </p>
+
+      <p className="eyebrow">
+        Member dashboard
+      </p>
+
+      <h1>
+        Welcome, {user?.name || "Member"}.
+      </h1>
+
+      <p className="lead">
+        This is the starting point for your
+        learning, projects and activity.
+      </p>
+
+      {message && (
+        <p className="form-message error">
+          {message}
+        </p>
+      )}
 
       <div className="stats-grid">
         <div className="stat-card">
           <strong>1</strong>
-          <span>Active Project</span>
+          <span>Active project</span>
         </div>
+
         <div className="stat-card">
-          <strong>3</strong>
-          <span>Learning Modules</span>
+          <strong>
+            {courses.length}
+          </strong>
+
+          <span>
+            Learning modules
+          </span>
         </div>
+
         <div className="stat-card">
-          <strong>0</strong>
-          <span>Badges</span>
+          <strong>
+            {user?.role || "member"}
+          </strong>
+
+          <span>
+            Account role
+          </span>
         </div>
       </div>
 
       <div className="dashboard-panel">
-        <h2>Learning Progress</h2>
+        <h2>
+          Learning progress
+        </h2>
 
         {courses.map((course) => (
-          <div className="progress-item" key={course.id}>
+          <div
+            className="progress-item"
+            key={course.id}
+          >
             <div>
-              <span>{course.title}</span>
-              <span>{course.progress}%</span>
+              <span>
+                {course.title}
+              </span>
+
+              <span>
+                {course.progress ?? 0}%
+              </span>
             </div>
 
             <div className="progress">
-              <div style={{ width: `${course.progress}%` }} />
+              <div
+                style={{
+                  width:
+                    `${course.progress ?? 0}%`,
+                }}
+              />
             </div>
           </div>
         ))}
